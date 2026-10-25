@@ -48,7 +48,7 @@ export default function PlayerPage() {
   return (
     <>
       <h1 className="title">
-        מי ענה?
+        סודות במגדל
         <small>
           שלום {name}{" "}
           {state?.phase === "lobby" && (
@@ -92,7 +92,7 @@ function Join({ onJoin }: { onJoin: (name: string) => void }) {
   return (
     <>
       <h1 className="title">
-        מי ענה?
+        סודות במגדל
         <small>משחק משפחתי לסופ״ש</small>
       </h1>
       <div className="card">

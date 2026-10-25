@@ -1,4 +1,4 @@
-# מי ענה? (migdal-quiz)
+# סודות במגדל (migdal-quiz)
 
 Everyone opens the site, enters a name and answers any of the questions (3+ recommended).
 At game time the host opens `/host`, starts the game, and each round shows one random answer.

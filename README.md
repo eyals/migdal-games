@@ -4,4 +4,4 @@ Family games. Each game lives in its own folder and is deployed as its own Verce
 
 | Folder | Game | Vercel project |
 |---|---|---|
-| `quiz` | "מי ענה?" - guess who wrote each answer | `migdal-quiz` |
+| `quiz` | "סודות במגדל" - guess who wrote each answer | `migdal-quiz` |
