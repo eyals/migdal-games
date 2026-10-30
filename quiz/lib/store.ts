@@ -15,6 +15,7 @@ interface Backend {
   set(key: string, value: unknown): Promise<void>;
   hset(key: string, field: string, value: unknown): Promise<void>;
   hgetall(key: string): Promise<Hash>;
+  hdel(key: string, field: string): Promise<void>;
   del(keys: string[]): Promise<void>;
 }
 
@@ -25,6 +26,7 @@ function redisBackend(url: string, token: string): Backend {
     set: async (k, v) => void (await r.set(k, JSON.stringify(v))),
     hset: async (k, f, v) => void (await r.hset(k, { [f]: JSON.stringify(v) })),
     hgetall: async (k) => (await r.hgetall<Hash>(k)) ?? {},
+    hdel: async (k, f) => void (await r.hdel(k, f)),
     del: async (keys) => void (keys.length && (await r.del(...keys))),
   };
 }
@@ -42,6 +44,7 @@ function memoryBackend(): Backend {
       m.set(k, h);
     },
     hgetall: async (k) => structuredClone((m.get(k) as Hash) ?? {}),
+    hdel: async (k, f) => void delete ((m.get(k) as Hash) ?? {})[f],
     del: async (keys) => keys.forEach((k) => m.delete(k)),
   };
 }
@@ -65,6 +68,11 @@ export async function getPlayers(): Promise<string[]> {
   return Object.entries(h)
     .sort((a, b) => Number(parse(a[1])) - Number(parse(b[1])))
     .map(([name]) => name);
+}
+
+export async function removePlayer(name: string) {
+  await db.hdel(PREFIX + "players", name);
+  await db.hdel(PREFIX + "answers", name);
 }
 
 export const addPlayer = (name: string) => db.hset(PREFIX + "players", name, Date.now());

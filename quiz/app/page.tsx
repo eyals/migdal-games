@@ -145,6 +145,7 @@ function Answers({ name }: { name: string }) {
   const [draft, setDraft] = useState<Record<number, string> | null>(null);
   const [saved, setSaved] = useState<Record<number, string>>({});
   const [status, setStatus] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     api<{ answers: Record<number, string> }>(`/api/answers?name=${encodeURIComponent(name)}`)
@@ -160,14 +161,27 @@ function Answers({ name }: { name: string }) {
   const count = Object.values(draft).filter((t) => t?.trim()).length;
   const dirty = JSON.stringify(clean(draft)) !== JSON.stringify(clean(saved));
 
+  const over = count > MAX_ANSWERS;
+
   const save = async () => {
     setStatus("שומר…");
+    setError("");
+    const send = () => api<{ answers: Record<number, string> }>("/api/answers", { name, answers: draft });
     try {
-      const r = await api<{ answers: Record<number, string> }>("/api/answers", { name, answers: draft });
+      let r;
+      try {
+        r = await send();
+      } catch (e) {
+        // The name may be missing after a reset: register it again and retry once.
+        if ((e as Error).message !== "שחקן לא מוכר") throw e;
+        await api("/api/join", { name, confirm: true });
+        r = await send();
+      }
       setSaved(r.answers);
       setStatus("נשמר ✓");
     } catch (e) {
-      setStatus((e as Error).message);
+      setStatus("");
+      setError(`לא נשמר: ${(e as Error).message}`);
     }
   };
 
@@ -205,9 +219,11 @@ function Answers({ name }: { name: string }) {
           ענית על <b>{count}</b> מתוך {MAX_ANSWERS} {count === MAX_ANSWERS && "✓"}
           {status && <span className="muted"> · {status}</span>}
         </span>
-        <button onClick={save} disabled={!dirty}>
+        <button onClick={save} disabled={!dirty || over}>
           שמירה
         </button>
+        {over && <p className="error" style={{ width: "100%", margin: 0 }}>אפשר עד {MAX_ANSWERS} תשובות. מחק/י {count - MAX_ANSWERS} כדי לשמור.</p>}
+        {error && <p className="error" style={{ width: "100%", margin: 0 }}>{error}</p>}
       </div>
     </>
   );

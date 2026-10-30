@@ -1,6 +1,6 @@
 import { buildRounds, leaderboard, scoreRound } from "@/lib/game";
 import { QUESTIONS } from "@/lib/questions";
-import { getAnswers, getGame, getPlayers, getVotes, resetAll, saveGame, usingRedis } from "@/lib/store";
+import { getAnswers, getGame, getPlayers, getVotes, removePlayer, resetAll, saveGame, usingRedis } from "@/lib/store";
 import { fail, ok } from "@/lib/http";
 
 export const dynamic = "force-dynamic";
@@ -40,7 +40,7 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const { action } = await req.json();
+  const { action, name } = await req.json();
   const game = await getGame();
 
   switch (action) {
@@ -73,6 +73,10 @@ export async function POST(req: Request) {
     case "end":
       if (game.phase === "lobby") return fail("המשחק עוד לא התחיל", 409);
       await saveGame({ ...game, phase: "end" });
+      break;
+    case "remove":
+      if (game.phase !== "lobby") return fail("אי אפשר למחוק שחקן אחרי שהמשחק התחיל", 409);
+      await removePlayer(String(name));
       break;
     case "reset":
       await resetAll();

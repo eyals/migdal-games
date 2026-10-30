@@ -25,12 +25,12 @@ export default function HostPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  const act = async (action: string, confirmText?: string) => {
+  const act = async (action: string, confirmText?: string, name?: string) => {
     if (confirmText && !confirm(confirmText)) return;
     setBusy(true);
     setError("");
     try {
-      await api("/api/host", { action });
+      await api("/api/host", { action, name });
       await refresh();
     } catch (e) {
       setError((e as Error).message);
@@ -56,7 +56,12 @@ export default function HostPage() {
         </div>
       )}
 
-      {state.phase === "lobby" && <Lobby state={state} busy={busy} onStart={() => act("start", "להתחיל את המשחק? אחרי זה אי אפשר לשנות תשובות.")} />}
+      {state.phase === "lobby" && <Lobby
+          state={state}
+          busy={busy}
+          onStart={() => act("start", "להתחיל את המשחק? אחרי זה אי אפשר לשנות תשובות.")}
+          onRemove={(n) => act("remove", `למחוק את ${n} ואת התשובות שלו/ה?`, n)}
+        />}
 
       {(state.phase === "question" || state.phase === "reveal") && state.current && (
         <div className="card">
@@ -138,7 +143,17 @@ export default function HostPage() {
   );
 }
 
-function Lobby({ state, busy, onStart }: { state: HostState; busy: boolean; onStart: () => void }) {
+function Lobby({
+  state,
+  busy,
+  onStart,
+  onRemove,
+}: {
+  state: HostState;
+  busy: boolean;
+  onStart: () => void;
+  onRemove: (name: string) => void;
+}) {
   const players = state.players ?? [];
   const answers = players.reduce((s, p) => s + p.count, 0);
   return (
@@ -151,7 +166,10 @@ function Lobby({ state, busy, onStart }: { state: HostState; busy: boolean; onSt
           {players.map((p) => (
             <li key={p.name}>
               <span className="name">{p.name}</span>
-              <span className={`badge ${p.count >= 3 ? "ok" : ""}`}>{p.count} תשובות</span>
+              <span className={`badge ${p.count > 0 ? "ok" : ""}`}>{p.count} תשובות</span>
+              <button className="ghost" disabled={busy} onClick={() => onRemove(p.name)} aria-label={`מחיקת ${p.name}`}>
+                ✕
+              </button>
             </li>
           ))}
         </ol>
