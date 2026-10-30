@@ -1,4 +1,4 @@
-import { QUESTIONS } from "@/lib/questions";
+import { MAX_ANSWERS, QUESTIONS } from "@/lib/questions";
 import { getAnswers, getGame, getPlayers, saveAnswers } from "@/lib/store";
 import { cleanName, fail, ok } from "@/lib/http";
 
@@ -22,6 +22,7 @@ export async function POST(req: Request) {
       answers[i] = text.trim().slice(0, 500);
     }
   }
+  if (Object.keys(answers).length > MAX_ANSWERS) return fail(`אפשר לענות על ${MAX_ANSWERS} שאלות לכל היותר`);
   await saveAnswers(name, answers);
   return ok({ answers });
 }

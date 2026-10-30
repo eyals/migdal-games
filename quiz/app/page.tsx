@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { Phase, Ranked } from "@/lib/game";
-import { MAX_PICKS, QUESTIONS, RECOMMENDED_ANSWERS, ROUND_POINTS } from "@/lib/questions";
+import { MAX_PICKS, QUESTIONS, MAX_ANSWERS, ROUND_POINTS } from "@/lib/questions";
 import { api, usePoll } from "@/lib/client";
 import { Leaderboard } from "./Leaderboard";
 
@@ -174,31 +174,35 @@ function Answers({ name }: { name: string }) {
   return (
     <>
       <div className="card">
-        <h2>בחר/י על אילו שאלות לענות</h2>
+        <h2>בחר/י 1-{MAX_ANSWERS} שאלות ועני/ה עליהן</h2>
         <p className="muted" style={{ margin: 0 }}>
-          מומלץ לפחות {RECOMMENDED_ANSWERS}. אפשר לחזור ולשנות עד שהמשחק מתחיל.
+          אפשר לחזור ולשנות עד שהמשחק מתחיל.
         </p>
       </div>
       <div className="card">
-        {QUESTIONS.map((q, i) => (
-          <div key={i} className={`q ${draft[i]?.trim() ? "done" : ""}`}>
-            <label htmlFor={`q${i}`}>{q}</label>
-            <textarea
-              id={`q${i}`}
-              value={draft[i] ?? ""}
-              onChange={(e) => {
-                setDraft({ ...draft, [i]: e.target.value });
-                setStatus("");
-              }}
-              placeholder="לא חובה"
-              maxLength={500}
-            />
-          </div>
-        ))}
+        {QUESTIONS.map((q, i) => {
+          const full = count >= MAX_ANSWERS && !draft[i]?.trim();
+          return (
+            <div key={i} className={`q ${draft[i]?.trim() ? "done" : ""}`}>
+              <label htmlFor={`q${i}`}>{q}</label>
+              <textarea
+                id={`q${i}`}
+                value={draft[i] ?? ""}
+                onChange={(e) => {
+                  setDraft({ ...draft, [i]: e.target.value });
+                  setStatus("");
+                }}
+                placeholder={full ? `כבר בחרת ${MAX_ANSWERS}. כדי לענות כאן, מחק/י תשובה אחרת` : "לא חובה"}
+                disabled={full}
+                maxLength={500}
+              />
+            </div>
+          );
+        })}
       </div>
       <div className="card sticky row spread">
         <span>
-          ענית על <b>{count}</b> {count < RECOMMENDED_ANSWERS ? <span className="muted">(מומלץ {RECOMMENDED_ANSWERS})</span> : "✓"}
+          ענית על <b>{count}</b> מתוך {MAX_ANSWERS} {count === MAX_ANSWERS && "✓"}
           {status && <span className="muted"> · {status}</span>}
         </span>
         <button onClick={save} disabled={!dirty}>

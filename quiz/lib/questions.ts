@@ -13,6 +13,6 @@ export const QUESTIONS = [
   "איזה הרגל מוזר יש לך?",
 ];
 
-export const RECOMMENDED_ANSWERS = 3;
+export const MAX_ANSWERS = 3;
 export const MAX_PICKS = 3;
 export const ROUND_POINTS = 6;

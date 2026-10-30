@@ -75,3 +75,4 @@ button.block { width: 100%; }
 .names { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 .pulse { animation: pulse 1.6s ease-in-out infinite; }
 @keyframes pulse { 50% { opacity: .5; } }
+textarea:disabled { background: #f4efe7; }
